@@ -10,9 +10,10 @@ env:
   _BACKEND_DOCKERFILE_PATH: .github/docker/backend.dockerfile
   _FRONTEND_NGINX_CONFIG_PATH: .github/docker/nginx.conf
   _BACKEND_MANIFEST_PATH: packages/backend/Cargo.toml
-  _FRONTEND_DOCKER_CONTEXT_PATH: packages/website/dist
-  _BACKEND_DOCKER_CONTEXT_PATH: packages/backend/target/x86_64-unknown-linux-gnu/release
+  _FRONTEND_DIST_PATH: packages/website/dist
+  _BACKEND_EXECUTABLE_PATH: packages/backend/target/x86_64-unknown-linux-gnu/release/fbe_backend
   _KUBERNETES_DEPLOYMENT_PATH: .github/kubernetes/deployment.yml
+  _TMP_DOCKER_CONTEXT_PATH: /tmp/_docker_context_
 
 jobs:
   build-frontend:
@@ -44,14 +45,17 @@ jobs:
       - name: Build
         run: yarn build:website
 
-      - name: Copy nginx config
-        run: cp $_FRONTEND_NGINX_CONFIG_PATH $_FRONTEND_DOCKER_CONTEXT_PATH
-
       - name: Set _FRONTEND_IMAGE_ env var
         run: echo ::set-env name=_FRONTEND_IMAGE_::$_BASE_IMAGE_NAME/frontend:${GITHUB_REF#refs/tags/}
 
+      - name: Prepare docker context
+        run: |
+          mkdir $_TMP_DOCKER_CONTEXT_PATH
+          cp $_FRONTEND_DIST_PATH/. $_TMP_DOCKER_CONTEXT_PATH
+          cp $_FRONTEND_NGINX_CONFIG_PATH $_TMP_DOCKER_CONTEXT_PATH
+
       - name: Build container image
-        run: docker build -t $_FRONTEND_IMAGE_ -t latest -f $_FRONTEND_DOCKERFILE_PATH $_FRONTEND_DOCKER_CONTEXT_PATH
+        run: docker build -t $_FRONTEND_IMAGE_ -t latest -f $_FRONTEND_DOCKERFILE_PATH $_TMP_DOCKER_CONTEXT_PATH
 
       - name: Docker Login
         run: docker login https://docker.pkg.github.com -u teoxoy -p ${{ secrets.GITHUB_TOKEN }}
@@ -65,6 +69,12 @@ jobs:
     steps:
       - name: Checkout master
         uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ env._RUST_TARGET }}
+          override: true
 
       - id: cargo-registry
         name: Cache cargo registry
@@ -82,14 +92,8 @@ jobs:
       - name: Cache cargo build
         uses: actions/cache@v2
         with:
-          path: target
+          path: packages/backend/target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ env._RUST_TARGET }}
-          override: true
 
       - name: Build
         uses: actions-rs/cargo@v1
@@ -108,8 +112,13 @@ jobs:
       - name: Set _BACKEND_IMAGE_ env var
         run: echo ::set-env name=_BACKEND_IMAGE_::$_BASE_IMAGE_NAME/backend:${GITHUB_REF#refs/tags/}
 
+      - name: Prepare docker context
+        run: |
+          mkdir $_TMP_DOCKER_CONTEXT_PATH
+          cp $_BACKEND_EXECUTABLE_PATH $_TMP_DOCKER_CONTEXT_PATH
+
       - name: Build container image
-        run: docker build -t $_BACKEND_IMAGE_ -t latest -f $_BACKEND_DOCKERFILE_PATH $_BACKEND_DOCKER_CONTEXT_PATH
+        run: docker build -t $_BACKEND_IMAGE_ -t latest -f $_BACKEND_DOCKERFILE_PATH $_TMP_DOCKER_CONTEXT_PATH
 
       - name: Docker Login
         run: docker login https://docker.pkg.github.com -u teoxoy -p ${{ secrets.GITHUB_TOKEN }}
