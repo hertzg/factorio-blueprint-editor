@@ -8,4 +8,4 @@ WORKDIR /home/root/fbe_backend
 COPY . .
 
 EXPOSE 85
-CMD fbe_backend
+CMD ./fbe_backend
