@@ -5,13 +5,13 @@ on:
 
 env:
   _BASE_IMAGE_NAME: docker.pkg.github.com/teoxoy/factorio-blueprint-editor
-  _RUST_TARGET: x86_64-unknown-linux-gnu
+  _RUST_TARGET: x86_64-unknown-linux-musl
   _FRONTEND_DOCKERFILE_PATH: .github/docker/frontend.dockerfile
   _BACKEND_DOCKERFILE_PATH: .github/docker/backend.dockerfile
   _FRONTEND_NGINX_CONFIG_PATH: .github/docker/nginx.conf
   _BACKEND_MANIFEST_PATH: packages/backend/Cargo.toml
   _FRONTEND_DIST_PATH: packages/website/dist
-  _BACKEND_EXECUTABLE_PATH: packages/backend/target/x86_64-unknown-linux-gnu/release/fbe_backend
+  _BACKEND_EXECUTABLE_PATH: packages/backend/target/x86_64-unknown-linux-musl/release/fbe_backend
   _KUBERNETES_DEPLOYMENT_PATH: .github/kubernetes/deployment.yml
   _TMP_DOCKER_CONTEXT_PATH: /tmp/_docker_context_
 
