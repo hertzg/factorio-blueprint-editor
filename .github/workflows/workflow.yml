@@ -51,7 +51,7 @@ jobs:
       - name: Prepare docker context
         run: |
           mkdir $_TMP_DOCKER_CONTEXT_PATH
-          cp $_FRONTEND_DIST_PATH/. $_TMP_DOCKER_CONTEXT_PATH
+          cp -r $_FRONTEND_DIST_PATH/. $_TMP_DOCKER_CONTEXT_PATH
           cp $_FRONTEND_NGINX_CONFIG_PATH $_TMP_DOCKER_CONTEXT_PATH
 
       - name: Build container image
