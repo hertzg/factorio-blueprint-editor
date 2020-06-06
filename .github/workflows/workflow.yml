@@ -70,6 +70,9 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v2
 
+      - name: Install musl
+        run: sudo apt-get install musl
+
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
