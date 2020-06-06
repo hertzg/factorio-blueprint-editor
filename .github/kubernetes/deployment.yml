@@ -23,6 +23,8 @@ spec:
         - name: frontend
           image: <FRONTEND_IMAGE>
           imagePullPolicy: IfNotPresent
+          imagePullSecrets:
+            - name: docker-github-packages
           ports:
             - containerPort: 80
           resources:
@@ -48,6 +50,8 @@ spec:
         - name: backend
           image: <BACKEND_IMAGE>
           imagePullPolicy: IfNotPresent
+          imagePullSecrets:
+            - name: docker-github-packages
           ports:
             - containerPort: 85
           envFrom:
