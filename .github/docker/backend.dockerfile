@@ -4,6 +4,7 @@ RUN apt-get update && \
     apt-get install -y \
         tar \
         libssl-dev \
+        ca-certificates \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
